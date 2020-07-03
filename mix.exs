@@ -25,7 +25,7 @@ defmodule BankAccount.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/factories"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
@@ -42,7 +42,12 @@ defmodule BankAccount.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:brcpfcnpj, "~> 0.2.0"},
+      {:cloak_ecto, "~> 1.0.1"},
+      {:timex, "~> 3.5"},
+      {:ex_machina, "~> 2.4", only: :test},
+      {:faker, "~> 0.13", only: :test}
     ]
   end
 
