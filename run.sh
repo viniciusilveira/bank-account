@@ -30,9 +30,9 @@ mix ecto.create
 echo "\nRun Migrations"
 mix ecto.migrate
 
-# echo "\nTesting the installation..."
+echo "\nTesting the installation..."
 # "Prove" that install was successful by running the tests
-# mix test
+mix test
 
 echo "\n Launching Phoenix web server..."
 # Start the phoenix web server
