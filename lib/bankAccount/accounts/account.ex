@@ -22,6 +22,8 @@ defmodule BankAccount.Accounts.Account do
     field :referral_code, :binary
     field :state, :binary
     field :status, :string
+    has_many :accounts, Account, foreign_key: :parent_id
+    belongs_to :account, Account, foreign_key: :parent_id
 
     timestamps()
   end
@@ -30,6 +32,7 @@ defmodule BankAccount.Accounts.Account do
   def changeset(account, attrs) do
     account
     |> cast(attrs, @required_fields ++ @optional_fields)
+    |> cast_assoc(:accounts)
     |> validate_required(@required_fields)
     |> validate_cpf(:cpf)
     |> validate_date(:birth_date)
@@ -42,6 +45,7 @@ defmodule BankAccount.Accounts.Account do
   def update_changeset(account, attrs) do
     account
     |> cast(attrs, @required_fields ++ @optional_fields)
+    |> cast_assoc(:accounts)
     |> validate_date(:birth_date)
     |> validate_format(:email, ~r/@/)
     |> validate_length(:referral_code, is: 8)

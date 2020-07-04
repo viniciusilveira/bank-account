@@ -37,6 +37,9 @@ defmodule BankAccount.Accounts do
     iex> get_account_by_referral_code("1111111")
     nil
   """
+
+  def get_account_by_referral_code(_referral_code = nil), do: nil
+
   def get_account_by_referral_code(referral_code),
     do: Repo.get_by(Account, referral_code: referral_code)
 
@@ -54,12 +57,16 @@ defmodule BankAccount.Accounts do
   """
   def create_account(attrs \\ %{}) do
     status = get_status(attrs)
-    referral_code = generate_referral_code(status)
+    referral_account = get_account_by_referral_code(attrs["referral_code"])
 
     %Account{}
     |> Account.changeset(
-      Map.merge(attrs, %{"status" => status, "referral_code" => referral_code})
+      Map.merge(attrs, %{
+        "status" => status,
+        "referral_code" => generate_referral_code(status)
+      })
     )
+    |> Ecto.Changeset.put_assoc(:account, referral_account)
     |> Repo.insert()
   end
 
@@ -78,6 +85,7 @@ defmodule BankAccount.Accounts do
   def update_account(%Account{} = account, attrs) do
     status = get_status(attrs, account)
     generated_attrs = %{"status" => status}
+    referral_account = get_account_by_referral_code(attrs["referral_code"])
 
     generated_attrs =
       if account.referral_code == nil do
@@ -87,7 +95,9 @@ defmodule BankAccount.Accounts do
       end
 
     account
+    |> Repo.preload(:account)
     |> Account.update_changeset(Map.merge(attrs, generated_attrs))
+    |> Ecto.Changeset.put_assoc(:account, referral_account)
     |> Repo.update()
   end
 
