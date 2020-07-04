@@ -58,10 +58,10 @@ defmodule BankAccount.Accounts.Account do
   end
 
   defp validate_date(changeset, field) do
-    case changeset.valid? do
-      true ->
-        birth_date = get_field(changeset, field)
+    birth_date = get_field(changeset, field)
 
+    case is_nil(birth_date) do
+      false ->
         case Timex.parse(birth_date, "{0D}/{0M}/{YYYY}") do
           {:ok, _} -> changeset
           _ -> add_error(changeset, :date, "Format invalid")
