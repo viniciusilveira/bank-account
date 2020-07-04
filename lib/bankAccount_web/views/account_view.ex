@@ -16,7 +16,8 @@ defmodule BankAccountWeb.AccountView do
       city: account.city,
       state: account.state,
       country: account.country,
-      referal_code: account.referal_code
+      referal_code: account.referal_code,
+      status: account.status
     }
   end
 end

@@ -1,13 +1,20 @@
 defmodule BankAccountWeb.AccountController do
   use BankAccountWeb, :controller
 
+  alias Brcpfcnpj
   alias BankAccount.Accounts
   alias BankAccount.Accounts.Account
 
   action_fallback BankAccountWeb.FallbackController
 
   def create(conn, %{"account" => account_params}) do
-    with nil <- Accounts.get_account_by(account_params["cpf"]) do
+    cpf =
+      %Cpf{number: account_params["cpf"]}
+      |> Brcpfcnpj.cpf_format()
+
+    account_params = Map.merge(account_params, %{"cpf" => cpf})
+
+    with nil <- Accounts.get_account_by_cpf(account_params["cpf"]) do
       with {:ok, %Account{} = account} <- Accounts.create_account(account_params) do
         conn
         |> put_status(:created)
@@ -22,7 +29,7 @@ defmodule BankAccountWeb.AccountController do
   end
 
   def show(conn, %{"cpf" => cpf}) do
-    account = Accounts.get_account_by(cpf)
+    account = Accounts.get_account_by_cpf(cpf)
     render(conn, "show.json", account: account)
   end
 

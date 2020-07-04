@@ -15,8 +15,20 @@ defmodule BankAccount.AccountFactory do
           gender: "Masculino",
           city: "Belo Horizonte",
           state: "Minas Gerais",
-          country: "Brasil",
-          referal_code: "12345678"
+          country: "Brasil"
+        }
+      end
+
+      def account_invalid_factory do
+        %Account{
+          birth_date: nil,
+          city: nil,
+          country: nil,
+          cpf: nil,
+          email: nil,
+          gender: nil,
+          name: nil,
+          state: nil
         }
       end
     end

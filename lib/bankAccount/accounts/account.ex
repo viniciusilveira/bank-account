@@ -3,9 +3,11 @@ defmodule BankAccount.Accounts.Account do
   import Ecto.Changeset
   import Brcpfcnpj.Changeset
 
+  alias BankAccount.Accounts.Account
+
   use Timex
 
-  @required_fields ~w(cpf)a
+  @required_fields ~w(cpf status)a
   @optional_fields ~w(birth_date city country email gender name referal_code state)a
 
   schema "accounts" do
@@ -19,6 +21,7 @@ defmodule BankAccount.Accounts.Account do
     field :name, BankAccount.Encrypted.Binary
     field :referal_code, :binary
     field :state, :binary
+    field :status, :string
 
     timestamps()
   end
@@ -38,24 +41,20 @@ defmodule BankAccount.Accounts.Account do
 
   def update_changeset(account, attrs) do
     account
-    |> cast(attrs, @optional_fields)
-    |> be_updated?(attrs)
+    |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_date(:birth_date)
     |> validate_format(:email, ~r/@/)
     |> validate_length(:referal_code, is: 8)
   end
 
-  defp be_updated?(changeset, attrs) do
-    case changeset.valid? do
-      true ->
-        case Map.has_key?(attrs, :cpf) do
-          false -> changeset
-          true -> add_error(changeset, :cpf, "Cannot be updated")
-        end
-
-      _ ->
-        changeset
-    end
+  def check_status(attrs, account \\ %Account{}) do
+    account
+    |> cast(attrs, @required_fields ++ @optional_fields)
+    |> validate_required(~w(cpf birth_date city country email gender name)a)
+    |> validate_cpf(:cpf)
+    |> validate_date(:birth_date)
+    |> validate_format(:email, ~r/@/)
+    |> validate_length(:referal_code, is: 8)
   end
 
   defp validate_date(changeset, field) do
