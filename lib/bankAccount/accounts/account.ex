@@ -8,7 +8,7 @@ defmodule BankAccount.Accounts.Account do
   use Timex
 
   @required_fields ~w(cpf status)a
-  @optional_fields ~w(birth_date city country email gender name referal_code state)a
+  @optional_fields ~w(birth_date city country email gender name referral_code state)a
 
   schema "accounts" do
     field :birth_date, BankAccount.Encrypted.Binary
@@ -19,7 +19,7 @@ defmodule BankAccount.Accounts.Account do
     field :email, BankAccount.Encrypted.Binary
     field :gender, :binary
     field :name, BankAccount.Encrypted.Binary
-    field :referal_code, :binary
+    field :referral_code, :binary
     field :state, :binary
     field :status, :string
 
@@ -34,7 +34,7 @@ defmodule BankAccount.Accounts.Account do
     |> validate_cpf(:cpf)
     |> validate_date(:birth_date)
     |> validate_format(:email, ~r/@/)
-    |> validate_length(:referal_code, is: 8)
+    |> validate_length(:referral_code, is: 8)
     |> unique_constraint(:cpf)
     |> put_hashed_fields()
   end
@@ -44,7 +44,7 @@ defmodule BankAccount.Accounts.Account do
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_date(:birth_date)
     |> validate_format(:email, ~r/@/)
-    |> validate_length(:referal_code, is: 8)
+    |> validate_length(:referral_code, is: 8)
   end
 
   def check_status(attrs, account \\ %Account{}) do
@@ -54,7 +54,7 @@ defmodule BankAccount.Accounts.Account do
     |> validate_cpf(:cpf)
     |> validate_date(:birth_date)
     |> validate_format(:email, ~r/@/)
-    |> validate_length(:referal_code, is: 8)
+    |> validate_length(:referral_code, is: 8)
   end
 
   defp validate_date(changeset, field) do

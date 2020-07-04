@@ -15,7 +15,7 @@ defmodule BankAccountWeb.AccountControllerTest do
     email: nil,
     gender: nil,
     name: nil,
-    referal_code: nil,
+    referral_code: nil,
     state: nil
   }
 
@@ -40,7 +40,7 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["name"] == @create_attrs["name"]
       assert response_account["state"] == @create_attrs["state"]
       assert response_account["status"] == "completed"
-      assert response_account["referal_code"] !== nil
+      assert response_account["referral_code"] !== nil
     end
 
     test "renders account when data is valid and fields are incompleted ", %{conn: conn} do
@@ -59,7 +59,7 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["name"] == @incomplete_attrs["name"]
       assert response_account["state"] == @incomplete_attrs["state"]
       assert response_account["status"] == "pending"
-      assert response_account["referal_code"] == nil
+      assert response_account["referral_code"] == nil
     end
 
     test "renders data when update existing account when incompleted data", %{conn: conn} do
@@ -83,7 +83,7 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["name"] == "Marcos Vinicius"
       assert response_account["state"] == @incomplete_attrs["state"]
       assert response_account["status"] == "pending"
-      assert response_account["referal_code"] == nil
+      assert response_account["referral_code"] == nil
     end
 
     test "renders errors when cpf is invalid", %{conn: conn} do

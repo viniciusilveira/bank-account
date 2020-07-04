@@ -27,7 +27,7 @@ defmodule BankAccount.AccountsTest do
       assert account.email == returnedAccount.email
       assert account.gender == returnedAccount.gender
       assert account.name == returnedAccount.name
-      assert account.referal_code == returnedAccount.referal_code
+      assert account.referral_code == returnedAccount.referral_code
       assert account.state == returnedAccount.state
     end
 
@@ -35,9 +35,9 @@ defmodule BankAccount.AccountsTest do
       assert nil == Accounts.get_account_by_cpf(Brcpfcnpj.cpf_generate(true))
     end
 
-    test "get_account_by_referal_code/1 returns the account with given cpf" do
-      account = insert(:account, referal_code: "12345678")
-      returnedAccount = Accounts.get_account_by_referal_code(account.referal_code)
+    test "get_account_by_referral_code/1 returns the account with given cpf" do
+      account = insert(:account, referral_code: "12345678")
+      returnedAccount = Accounts.get_account_by_referral_code(account.referral_code)
 
       assert account.birth_date == returnedAccount.birth_date
       assert account.city == returnedAccount.city
@@ -46,13 +46,13 @@ defmodule BankAccount.AccountsTest do
       assert account.email == returnedAccount.email
       assert account.gender == returnedAccount.gender
       assert account.name == returnedAccount.name
-      assert account.referal_code == returnedAccount.referal_code
+      assert account.referral_code == returnedAccount.referral_code
       assert account.state == returnedAccount.state
     end
 
-    test "get_account_by_referal_code/1 returns nil when cpf does not exist in database" do
-      insert(:account, referal_code: "12345678")
-      assert nil == Accounts.get_account_by_referal_code("11111111")
+    test "get_account_by_referral_code/1 returns nil when cpf does not exist in database" do
+      insert(:account, referral_code: "12345678")
+      assert nil == Accounts.get_account_by_referral_code("11111111")
     end
 
     test "create_account/1 with valid data creates a account", %{account: account} do

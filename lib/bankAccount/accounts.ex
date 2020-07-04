@@ -25,20 +25,20 @@ defmodule BankAccount.Accounts do
   def get_account_by_cpf(cpf), do: Repo.get_by(Account, cpf_hash: cpf)
 
   @doc """
-  Gets a single account by referal_code.
+  Gets a single account by referral_code.
 
   Returns `nil` if the Account does not exist.
 
   ## Examples
 
-    iex> get_sccount_by_referal_code("AJ21KKQ9")
+    iex> get_sccount_by_referral_code("AJ21KKQ9")
     %Account{}
 
-    iex> get_account_by_referal_code("1111111")
+    iex> get_account_by_referral_code("1111111")
     nil
   """
-  def get_account_by_referal_code(referal_code),
-    do: Repo.get_by(Account, referal_code: referal_code)
+  def get_account_by_referral_code(referral_code),
+    do: Repo.get_by(Account, referral_code: referral_code)
 
   @doc """
   Creates a account.
@@ -54,10 +54,12 @@ defmodule BankAccount.Accounts do
   """
   def create_account(attrs \\ %{}) do
     status = get_status(attrs)
-    referal_code = generate_referal_code(status)
+    referral_code = generate_referral_code(status)
 
     %Account{}
-    |> Account.changeset(Map.merge(attrs, %{"status" => status, "referal_code" => referal_code}))
+    |> Account.changeset(
+      Map.merge(attrs, %{"status" => status, "referral_code" => referral_code})
+    )
     |> Repo.insert()
   end
 
@@ -78,8 +80,8 @@ defmodule BankAccount.Accounts do
     generated_attrs = %{"status" => status}
 
     generated_attrs =
-      if account.referal_code == nil do
-        Map.merge(generated_attrs, %{"referal_code" => generate_referal_code(status)})
+      if account.referral_code == nil do
+        Map.merge(generated_attrs, %{"referral_code" => generate_referral_code(status)})
       else
         generated_attrs
       end
@@ -109,22 +111,22 @@ defmodule BankAccount.Accounts do
     end
   end
 
-  defp generate_referal_code(_status = "pending"), do: nil
+  defp generate_referral_code(_status = "pending"), do: nil
 
-  defp generate_referal_code(status = "completed") do
+  defp generate_referral_code(status = "completed") do
     min = String.to_integer("10000000", 36)
     max = String.to_integer("ZZZZZZZZ", 36)
 
-    referal_code =
+    referral_code =
       max
       |> Kernel.-(min)
       |> :rand.uniform()
       |> Kernel.+(min)
       |> Integer.to_string(36)
 
-    case get_account_by_referal_code(referal_code) do
-      nil -> referal_code
-      _ -> generate_referal_code(status)
+    case get_account_by_referral_code(referral_code) do
+      nil -> referral_code
+      _ -> generate_referral_code(status)
     end
   end
 end

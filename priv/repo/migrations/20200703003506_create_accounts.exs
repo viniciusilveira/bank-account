@@ -12,7 +12,7 @@ defmodule BankAccount.Repo.Migrations.CreateAccounts do
       add :city, :binary
       add :state, :binary
       add :country, :binary
-      add :referal_code, :binary
+      add :referral_code, :binary
 
       timestamps()
     end
