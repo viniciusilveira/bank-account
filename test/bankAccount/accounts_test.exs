@@ -18,7 +18,7 @@ defmodule BankAccount.AccountsTest do
     end
 
     test "get_account/1 returns the account", %{account: account} do
-      returnedAccount = Accounts.get_account(account.id)
+      {:ok, returnedAccount} = Accounts.get_account(account.id)
 
       assert account.birth_date == returnedAccount.birth_date
       assert account.city == returnedAccount.city
@@ -32,7 +32,7 @@ defmodule BankAccount.AccountsTest do
     end
 
     test "get_account/1 returns nil when id not exits" do
-      assert nil == Accounts.get_account(12_315_324)
+      assert {:error, :not_found} == Accounts.get_account(12_315_324)
     end
 
     test "get_account_by_cpf/1 returns the account with given cpf", %{account: account} do

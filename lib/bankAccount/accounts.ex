@@ -18,10 +18,20 @@ defmodule BankAccount.Accounts do
       iex> get_account(1)
       %Account{}
 
-      iex> get_account_cpf(456)
-      nil
+      iex> get_account(456)
+      {:error, :not_found}
   """
-  def get_account(id), do: Account |> Repo.get(id) |> Repo.preload([:accounts])
+  def get_account(id) do
+    account = Account |> Repo.get(id) |> Repo.preload([:accounts])
+
+    case account do
+      %Account{} ->
+        {:ok, account}
+
+      nil ->
+        {:error, :not_found}
+    end
+  end
 
   @doc """
   Gets a single account by cpf.
