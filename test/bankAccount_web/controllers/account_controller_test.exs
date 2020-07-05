@@ -147,16 +147,16 @@ defmodule BankAccountWeb.AccountControllerTest do
           account: string_params_for(:account, referral_code: "11111111")
         )
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 422)["errors"] == %{"base" => ["Referral code is invalid"]}
     end
 
     test "renders errors when cpf is invalid", %{conn: conn} do
       conn =
         post(conn, Routes.account_path(conn, :create),
-          account: string_params_for(:account, cpf: "315.694.100-04")
+          account: string_params_for(:account, cpf: "31569410004")
         )
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 422)["errors"] == %{"cpf" => ["Invalid Cpf"]}
     end
 
     test "renders errors when referral_code is invalid", %{conn: conn} do
@@ -165,7 +165,7 @@ defmodule BankAccountWeb.AccountControllerTest do
           account: string_params_for(:account, referral_code: "11111111")
         )
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 422)["errors"] == %{"base" => ["Referral code is invalid"]}
     end
 
     test "renders errors when email is invalid", %{conn: conn} do
@@ -174,7 +174,7 @@ defmodule BankAccountWeb.AccountControllerTest do
           account: string_params_for(:account, email: "invalidmail.com")
         )
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 422)["errors"] == %{"email" => ["has invalid format"]}
     end
 
     test "renders errors when birth_date is invalid", %{conn: conn} do
@@ -183,7 +183,7 @@ defmodule BankAccountWeb.AccountControllerTest do
           account: string_params_for(:account, birth_date: "12/11/2019d")
         )
 
-      assert json_response(conn, 422)["errors"] != %{}
+      assert json_response(conn, 422)["errors"] == %{"date" => ["Format invalid"]}
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -211,7 +211,7 @@ defmodule BankAccountWeb.AccountControllerTest do
     test "renders error when id doesn't exist", %{conn: conn} do
       {:ok, _account} = Accounts.create_account(@create_attrs)
       conn = get(conn, Routes.account_path(conn, :show, 12391))
-      assert json_response(conn, 200)["data"] == nil
+      assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
     end
   end
 end

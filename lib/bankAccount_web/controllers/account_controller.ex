@@ -8,9 +8,7 @@ defmodule BankAccountWeb.AccountController do
   action_fallback BankAccountWeb.FallbackController
 
   def create(conn, %{"account" => account_params}) do
-    cpf =
-      %Cpf{number: account_params["cpf"]}
-      |> Brcpfcnpj.cpf_format()
+    cpf = format_cpf(account_params)
 
     account_params = Map.merge(account_params, %{"cpf" => cpf})
 
@@ -29,8 +27,9 @@ defmodule BankAccountWeb.AccountController do
   end
 
   def show(conn, %{"id" => id}) do
-    account = Accounts.get_account(id)
-    render(conn, "show_with_relateds.json", account: account)
+    with {:ok, %Account{} = account} <- Accounts.get_account(id) do
+      render(conn, "show_with_relateds.json", account: account)
+    end
   end
 
   defp update(conn, %Account{} = account, account_params) do
@@ -45,4 +44,11 @@ defmodule BankAccountWeb.AccountController do
 
   defp get_message(%{status: "pending"}),
     do: "Dados salvos! Envie as informações que estão faltando para finalizar o cadastro."
+
+  defp format_cpf(%{"cpf" => cpf}) do
+    case formated_cpf = %Cpf{number: cpf} |> Brcpfcnpj.cpf_format() do
+      nil -> cpf
+      _ -> formated_cpf
+    end
+  end
 end
