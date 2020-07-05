@@ -28,13 +28,9 @@ defmodule BankAccountWeb.AccountController do
     end
   end
 
-  def show(conn, %{"cpf" => cpf}) do
-    cpf =
-      %Cpf{number: cpf}
-      |> Brcpfcnpj.cpf_format()
-
-    account = Accounts.get_account_by_cpf(cpf)
-    render(conn, "show.json", account: account)
+  def show(conn, %{"id" => id}) do
+    account = Accounts.get_account(id)
+    render(conn, "show_with_relateds.json", account: account)
   end
 
   defp update(conn, %Account{} = account, account_params) do

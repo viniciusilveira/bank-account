@@ -17,6 +17,24 @@ defmodule BankAccount.AccountsTest do
       {:ok, account: account}
     end
 
+    test "get_account/1 returns the account", %{account: account} do
+      returnedAccount = Accounts.get_account(account.id)
+
+      assert account.birth_date == returnedAccount.birth_date
+      assert account.city == returnedAccount.city
+      assert account.country == returnedAccount.country
+      assert account.cpf == returnedAccount.cpf
+      assert account.email == returnedAccount.email
+      assert account.gender == returnedAccount.gender
+      assert account.name == returnedAccount.name
+      assert account.referral_code == returnedAccount.referral_code
+      assert account.state == returnedAccount.state
+    end
+
+    test "get_account/1 returns nil when id not exits" do
+      assert nil == Accounts.get_account(12_315_324)
+    end
+
     test "get_account_by_cpf/1 returns the account with given cpf", %{account: account} do
       returnedAccount = Accounts.get_account_by_cpf(account.cpf)
 

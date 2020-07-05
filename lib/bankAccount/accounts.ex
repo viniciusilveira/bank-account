@@ -9,6 +9,21 @@ defmodule BankAccount.Accounts do
   alias BankAccount.Accounts.Account
 
   @doc """
+  Gets a single account.
+
+  Returns nil if the Account does not exist.
+
+  ## Examples
+
+      iex> get_account(1)
+      %Account{}
+
+      iex> get_account_cpf(456)
+      nil
+  """
+  def get_account(id), do: Account |> Repo.get(id) |> Repo.preload([:accounts])
+
+  @doc """
   Gets a single account by cpf.
 
   Returns nil if the Account does not exist.

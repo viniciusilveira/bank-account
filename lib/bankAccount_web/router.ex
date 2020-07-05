@@ -8,7 +8,7 @@ defmodule BankAccountWeb.Router do
   scope "/api", BankAccountWeb do
     pipe_through :api
     resources "/accounts", AccountController, only: [:create]
-    get "/accounts/:cpf", AccountController, :show
+    get "/accounts/:id", AccountController, :show
   end
 
   # Enables LiveDashboard only for development
