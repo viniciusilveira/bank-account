@@ -9,6 +9,21 @@ defmodule BankAccount.Accounts do
   alias BankAccount.Accounts.Account
 
   @doc """
+  Gets a single account.
+
+  Returns nil if the Account does not exist.
+
+  ## Examples
+
+      iex> get_account(1)
+      %Account{}
+
+      iex> get_account_cpf(456)
+      nil
+  """
+  def get_account(id), do: Account |> Repo.get(id) |> Repo.preload([:accounts])
+
+  @doc """
   Gets a single account by cpf.
 
   Returns nil if the Account does not exist.
@@ -57,17 +72,26 @@ defmodule BankAccount.Accounts do
   """
   def create_account(attrs \\ %{}) do
     status = get_status(attrs)
+    attrs = Map.put(attrs, "status", status)
     referral_account = get_account_by_referral_code(attrs["referral_code"])
 
-    %Account{}
-    |> Account.changeset(
-      Map.merge(attrs, %{
-        "status" => status,
-        "referral_code" => generate_referral_code(status)
-      })
-    )
-    |> Ecto.Changeset.put_assoc(:account, referral_account)
-    |> Repo.insert()
+    with false <- is_nil(attrs["referral_code"]),
+         %Account{} = referral_account <- referral_account do
+      attrs
+      |> Map.put("referral_code", generate_referral_code(status))
+      |> do_create_account(referral_account)
+    else
+      true ->
+        attrs
+        |> Map.merge(%{"status" => status, "referral_code" => generate_referral_code(status)})
+        |> do_create_account()
+
+      _ ->
+        %Account{}
+        |> Account.changeset(attrs)
+        |> Ecto.Changeset.add_error(:base, "Referral code is invalid")
+        |> Repo.insert()
+    end
   end
 
   @doc """
@@ -84,21 +108,31 @@ defmodule BankAccount.Accounts do
   """
   def update_account(%Account{} = account, attrs) do
     status = get_status(attrs, account)
-    generated_attrs = %{"status" => status}
-    referral_account = get_account_by_referral_code(attrs["referral_code"])
+    attrs = Map.put(attrs, "status", status)
 
-    generated_attrs =
+    referral_code =
       if account.referral_code == nil do
-        Map.merge(generated_attrs, %{"referral_code" => generate_referral_code(status)})
-      else
-        generated_attrs
+        generate_referral_code(status)
       end
 
-    account
-    |> Repo.preload(:account)
-    |> Account.update_changeset(Map.merge(attrs, generated_attrs))
-    |> Ecto.Changeset.put_assoc(:account, referral_account)
-    |> Repo.update()
+    with false <- is_nil(attrs["referral_code"]),
+         %Account{} = referral_account <- get_account_by_referral_code(attrs["referral_code"]),
+         nil <- account.parent_id do
+      attrs
+      |> Map.put("referral_code", referral_code)
+      |> do_update_account(account, referral_account)
+    else
+      true ->
+        attrs
+        |> Map.put("referral_code", referral_code)
+        |> do_update_account(account)
+
+      _ ->
+        account
+        |> Account.update_changeset(attrs)
+        |> Ecto.Changeset.add_error(:base, "Referral code is Invalid")
+        |> Repo.update()
+    end
   end
 
   @doc """
@@ -113,6 +147,27 @@ defmodule BankAccount.Accounts do
   def change_account(%Account{} = account, attrs \\ %{}) do
     Account.changeset(account, attrs)
   end
+
+  defp do_create_account(attrs, referral_account \\ nil) do
+    %Account{}
+    |> Account.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:account, referral_account)
+    |> Repo.insert()
+  end
+
+  defp do_update_account(attrs, %Account{} = account, referral_account \\ nil) do
+    account
+    |> Repo.preload(:account)
+    |> Account.update_changeset(attrs)
+    |> put_referral_account(referral_account)
+    |> Repo.update()
+  end
+
+  defp put_referral_account(changeset, %Account{} = referral_account) do
+    Ecto.Changeset.put_assoc(changeset, :account, referral_account)
+  end
+
+  defp put_referral_account(changeset, _referral_account), do: changeset
 
   defp get_status(attrs, account \\ %Account{}) do
     case Account.check_status(attrs, account).valid? do

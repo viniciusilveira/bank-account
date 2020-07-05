@@ -26,9 +26,9 @@ defmodule BankAccountWeb.AccountControllerTest do
   describe "create account" do
     test "renders account when data is valid and all fields were informed ", %{conn: conn} do
       conn = post(conn, Routes.account_path(conn, :create), account: @create_attrs)
-      assert %{"cpf" => cpf} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.account_path(conn, :show, cpf))
+      conn = get(conn, Routes.account_path(conn, :show, id))
 
       response_account = json_response(conn, 200)["data"]
       assert response_account["birth_date"] == @create_attrs["birth_date"]
@@ -46,9 +46,9 @@ defmodule BankAccountWeb.AccountControllerTest do
     test "renders account when data is valid and fields are incompleted ", %{conn: conn} do
       conn = post(conn, Routes.account_path(conn, :create), account: @incomplete_attrs)
 
-      assert %{"cpf" => cpf} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.account_path(conn, :show, cpf))
+      conn = get(conn, Routes.account_path(conn, :show, id))
 
       response_account = json_response(conn, 200)["data"]
       assert response_account["birth_date"] == @incomplete_attrs["birth_date"]
@@ -68,9 +68,9 @@ defmodule BankAccountWeb.AccountControllerTest do
 
       conn = post(conn, Routes.account_path(conn, :create), account: attrs_with_referral)
 
-      assert %{"cpf" => cpf} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, Routes.account_path(conn, :show, cpf))
+      conn = get(conn, Routes.account_path(conn, :show, id))
 
       response_account = json_response(conn, 200)["data"]
 
@@ -85,7 +85,7 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] != nil
     end
 
-    test "updating a existing account when incompleted data", %{conn: conn} do
+    test "update account when incompleted data", %{conn: conn} do
       Accounts.create_account(@incomplete_attrs)
 
       conn =
@@ -93,9 +93,9 @@ defmodule BankAccountWeb.AccountControllerTest do
           account: %{cpf: @incomplete_attrs["cpf"], name: "Marcos Vinicius"}
         )
 
-      assert %{"cpf" => cpf} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.account_path(conn, :show, cpf))
+      conn = get(conn, Routes.account_path(conn, :show, id))
 
       response_account = json_response(conn, 200)["data"]
       assert response_account["birth_date"] == @incomplete_attrs["birth_date"]
@@ -121,9 +121,9 @@ defmodule BankAccountWeb.AccountControllerTest do
 
       conn = post(conn, Routes.account_path(conn, :create), account: attrs_with_referral)
 
-      assert %{"cpf" => cpf} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, Routes.account_path(conn, :show, cpf))
+      conn = get(conn, Routes.account_path(conn, :show, id))
 
       response_account = json_response(conn, 200)["data"]
 
@@ -139,10 +139,30 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] != nil
     end
 
+    test "update account return error when referral_code is invalid", %{conn: conn} do
+      Accounts.create_account(@incomplete_attrs)
+
+      conn =
+        post(conn, Routes.account_path(conn, :create),
+          account: string_params_for(:account, referral_code: "11111111")
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
     test "renders errors when cpf is invalid", %{conn: conn} do
       conn =
         post(conn, Routes.account_path(conn, :create),
           account: string_params_for(:account, cpf: "315.694.100-04")
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when referral_code is invalid", %{conn: conn} do
+      conn =
+        post(conn, Routes.account_path(conn, :create),
+          account: string_params_for(:account, referral_code: "11111111")
         )
 
       assert json_response(conn, 422)["errors"] != %{}
@@ -173,9 +193,9 @@ defmodule BankAccountWeb.AccountControllerTest do
   end
 
   describe "show account" do
-    test "renders account when cpf is valid", %{conn: conn} do
-      {:ok, _account} = Accounts.create_account(@create_attrs)
-      conn = get(conn, Routes.account_path(conn, :show, @create_attrs["cpf"]))
+    test "renders account", %{conn: conn} do
+      {:ok, account} = Accounts.create_account(@create_attrs)
+      conn = get(conn, Routes.account_path(conn, :show, account.id))
       response_account = json_response(conn, 200)["data"]
       assert response_account["birth_date"] == @create_attrs["birth_date"]
       assert response_account["city"] == @create_attrs["city"]
@@ -188,9 +208,9 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["status"] == "completed"
     end
 
-    test "renders error when cpf doesn't exist", %{conn: conn} do
+    test "renders error when id doesn't exist", %{conn: conn} do
       {:ok, _account} = Accounts.create_account(@create_attrs)
-      conn = get(conn, Routes.account_path(conn, :show, "111.111.111-11"))
+      conn = get(conn, Routes.account_path(conn, :show, 12391))
       assert json_response(conn, 200)["data"] == nil
     end
   end

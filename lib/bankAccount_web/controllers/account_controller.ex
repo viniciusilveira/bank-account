@@ -19,7 +19,7 @@ defmodule BankAccountWeb.AccountController do
         conn
         |> put_status(:created)
         |> put_resp_header("location", Routes.account_path(conn, :show, account))
-        |> render("show.json", account: account)
+        |> render("show.json", %{account: account, message: get_message(account)})
       end
     else
       account = %Account{} ->
@@ -28,19 +28,21 @@ defmodule BankAccountWeb.AccountController do
     end
   end
 
-  def show(conn, %{"cpf" => cpf}) do
-    cpf =
-      %Cpf{number: cpf}
-      |> Brcpfcnpj.cpf_format()
-
-    account = Accounts.get_account_by_cpf(cpf)
-    render(conn, "show.json", account: account)
+  def show(conn, %{"id" => id}) do
+    account = Accounts.get_account(id)
+    render(conn, "show_with_relateds.json", account: account)
   end
 
   defp update(conn, %Account{} = account, account_params) do
     with {:ok, %Account{} = account} <-
            Accounts.update_account(account, Map.delete(account_params, :cpf)) do
-      render(conn, "show.json", account: account)
+      render(conn, "show.json", %{account: account, message: get_message(account)})
     end
   end
+
+  defp get_message(%{status: "completed", referral_code: referral_code}),
+    do: "Seus dados estão completos. Utilize o código #{referral_code} para convidar seus amigos."
+
+  defp get_message(%{status: "pending"}),
+    do: "Dados salvos! Envie as informações que estão faltando para finalizar o cadastro."
 end
