@@ -2,8 +2,8 @@ defmodule BankAccountWeb.AccountView do
   use BankAccountWeb, :view
   alias BankAccountWeb.AccountView
 
-  def render("show.json", %{account: account}) do
-    %{data: render_one(account, AccountView, "account.json")}
+  def render("show.json", %{account: account, message: message}) do
+    %{data: render_one(account, AccountView, "account.json"), message: message}
   end
 
   def render("show_with_relateds.json", %{account: account}) do

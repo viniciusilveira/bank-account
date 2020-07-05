@@ -110,22 +110,21 @@ defmodule BankAccount.Accounts do
     status = get_status(attrs, account)
     attrs = Map.put(attrs, "status", status)
 
+    referral_code =
+      if account.referral_code == nil do
+        generate_referral_code(status)
+      end
+
     with false <- is_nil(attrs["referral_code"]),
          %Account{} = referral_account <- get_account_by_referral_code(attrs["referral_code"]),
          nil <- account.parent_id do
-      attrs =
-        if account.referral_code == nil do
-          Map.put(attrs, "referral_code", generate_referral_code(status))
-        else
-          attrs
-        end
-
       attrs
+      |> Map.put("referral_code", referral_code)
       |> do_update_account(account, referral_account)
     else
       true ->
         attrs
-        |> Map.delete("referral_code")
+        |> Map.put("referral_code", referral_code)
         |> do_update_account(account)
 
       _ ->
@@ -160,9 +159,15 @@ defmodule BankAccount.Accounts do
     account
     |> Repo.preload(:account)
     |> Account.update_changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:account, referral_account)
+    |> put_referral_account(referral_account)
     |> Repo.update()
   end
+
+  defp put_referral_account(changeset, %Account{} = referral_account) do
+    Ecto.Changeset.put_assoc(changeset, :account, referral_account)
+  end
+
+  defp put_referral_account(changeset, _referral_account), do: changeset
 
   defp get_status(attrs, account \\ %Account{}) do
     case Account.check_status(attrs, account).valid? do
