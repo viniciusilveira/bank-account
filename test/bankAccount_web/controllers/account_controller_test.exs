@@ -139,10 +139,30 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] != nil
     end
 
+    test "update account return error when referral_code is invalid", %{conn: conn} do
+      Accounts.create_account(@incomplete_attrs)
+
+      conn =
+        post(conn, Routes.account_path(conn, :create),
+          account: string_params_for(:account, referral_code: "11111111")
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
     test "renders errors when cpf is invalid", %{conn: conn} do
       conn =
         post(conn, Routes.account_path(conn, :create),
           account: string_params_for(:account, cpf: "315.694.100-04")
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when referral_code is invalid", %{conn: conn} do
+      conn =
+        post(conn, Routes.account_path(conn, :create),
+          account: string_params_for(:account, referral_code: "11111111")
         )
 
       assert json_response(conn, 422)["errors"] != %{}

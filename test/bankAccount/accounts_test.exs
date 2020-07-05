@@ -95,6 +95,13 @@ defmodule BankAccount.AccountsTest do
       assert account.parent_id === referrer_account.id
     end
 
+    test "create_account/1 with invalid referral_code and returs error changeset", %{
+      account: _referrer_account
+    } do
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.create_account(string_params_for(:account, referral_code: "12345678"))
+    end
+
     test "create_account/1 with invalid cpf and returns error changeset" do
       assert {:error, %Ecto.Changeset{}} =
                Accounts.create_account(string_params_for(:account, cpf: "859.653.930-17"))
@@ -139,6 +146,19 @@ defmodule BankAccount.AccountsTest do
                })
 
       assert account.parent_id == referrer_account.id
+    end
+
+    test "update_account/1 with invalid referral_code returns error changeset", %{
+      account: _referrer_account
+    } do
+      {:ok, account} = Accounts.create_account(string_params_for(:account, email: nil))
+
+      assert account.status == "pending"
+
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.update_account(account, %{
+                 "referral_code" => "12345678"
+               })
     end
 
     test "update_account/2 with invalid email returns error changeset", %{account: account} do
