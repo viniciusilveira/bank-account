@@ -46,6 +46,9 @@ defmodule BankAccount.MixProject do
       {:brcpfcnpj, "~> 0.2.0"},
       {:cloak_ecto, "~> 1.0.1"},
       {:timex, "~> 3.5"},
+      {:comeonin, "~> 5.3"},
+      {:guardian, "~> 2.0"},
+      {:bcrypt_elixir, "~> 2.0"},
       {:ex_machina, "~> 2.4", only: :test},
       {:faker, "~> 0.13", only: :test}
     ]

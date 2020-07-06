@@ -7,6 +7,7 @@ defmodule BankAccount.Accounts do
   alias BankAccount.Repo
 
   alias BankAccount.Accounts.Account
+  alias BankAccount.Users.User
 
   @doc """
   Gets a single account.
@@ -80,7 +81,7 @@ defmodule BankAccount.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_account(attrs \\ %{}) do
+  def create_account(attrs \\ %{}, user) do
     status = get_status(attrs)
     attrs = Map.put(attrs, "status", status)
     referral_account = get_account_by_referral_code(attrs["referral_code"])
@@ -89,16 +90,16 @@ defmodule BankAccount.Accounts do
          %Account{} = referral_account <- referral_account do
       attrs
       |> Map.put("referral_code", generate_referral_code(status))
-      |> do_create_account(referral_account)
+      |> do_create_account(user, referral_account)
     else
       true ->
         attrs
         |> Map.merge(%{"status" => status, "referral_code" => generate_referral_code(status)})
-        |> do_create_account()
+        |> do_create_account(user)
 
       _ ->
         %Account{}
-        |> Account.changeset(attrs)
+        |> Account.changeset(attrs, user)
         |> Ecto.Changeset.add_error(:base, "Referral code is invalid")
         |> Repo.insert()
     end
@@ -145,22 +146,9 @@ defmodule BankAccount.Accounts do
     end
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking account changes.
-
-  ## Examples
-
-      iex> change_account(account)
-      %Ecto.Changeset{data: %Account{}}
-
-  """
-  def change_account(%Account{} = account, attrs \\ %{}) do
-    Account.changeset(account, attrs)
-  end
-
-  defp do_create_account(attrs, referral_account \\ nil) do
+  defp do_create_account(attrs, %User{} = user, referral_account \\ nil) do
     %Account{}
-    |> Account.changeset(attrs)
+    |> Account.changeset(attrs, user)
     |> Ecto.Changeset.put_assoc(:account, referral_account)
     |> Repo.insert()
   end

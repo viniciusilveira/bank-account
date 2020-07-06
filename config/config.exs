@@ -30,6 +30,11 @@ config :bankAccount, BankAccount.Vault,
        tag: "AES.GCM.V1", key: Base.decode64!("2UkIXDqImnQoks3lh6RDXf94qK33ft59pf6Vo7EQ/QM=")}
   ]
 
+# Guardian config
+config :bankAccount, BankAccount.Guardian,
+  issuer: "bankAccount",
+  secret_key: "IEZjbjEI8+i9U1ZW4KS5BTps2pPUNhQ5dxe1OJ7QYVJqPO6xeRcWXMtumG1569bc"
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

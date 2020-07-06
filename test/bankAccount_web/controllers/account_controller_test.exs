@@ -1,7 +1,9 @@
 defmodule BankAccountWeb.AccountControllerTest do
   use BankAccountWeb.ConnCase
 
+  alias BankAccount.Guardian
   alias BankAccount.Accounts
+  alias BankAccount.Users
 
   import BankAccount.Factory
 
@@ -20,7 +22,11 @@ defmodule BankAccountWeb.AccountControllerTest do
   }
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    {:ok, user} = Users.create_user(params_for(:user))
+    {:ok, token, _claims} = Guardian.encode_and_sign(user)
+    conn = put_req_header(conn, "authorization", "Bearer #{token}")
+
+    {:ok, conn: put_req_header(conn, "accept", "application/json"), user: user}
   end
 
   describe "create account" do
@@ -62,8 +68,19 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] == nil
     end
 
-    test "renders account when data is valid and referral_code was informed", %{conn: conn} do
-      {:ok, account} = Accounts.create_account(@create_attrs)
+    test "create account returns unauthorizated", %{conn: conn} do
+      conn = delete_req_header(conn, "authorization")
+
+      conn = post(conn, Routes.account_path(conn, :create), account: @create_attrs)
+
+      assert conn.status == 401
+    end
+
+    test "renders account when data is valid and referral_code was informed", %{
+      conn: conn,
+      user: user
+    } do
+      {:ok, account} = Accounts.create_account(@create_attrs, user)
       attrs_with_referral = string_params_for(:account, referral_code: account.referral_code)
 
       conn = post(conn, Routes.account_path(conn, :create), account: attrs_with_referral)
@@ -85,8 +102,8 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] != nil
     end
 
-    test "update account when incompleted data", %{conn: conn} do
-      Accounts.create_account(@incomplete_attrs)
+    test "update account when incompleted data", %{conn: conn, user: user} do
+      Accounts.create_account(@incomplete_attrs, user)
 
       conn =
         post(conn, Routes.account_path(conn, :create),
@@ -109,9 +126,13 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] == nil
     end
 
-    test "update account when data is valid and referral_code was informed", %{conn: conn} do
-      {:ok, referrer_account} = Accounts.create_account(@create_attrs)
-      {:ok, account} = Accounts.create_account(@incomplete_attrs)
+    test "update account when data is valid and referral_code was informed", %{
+      conn: conn,
+      user: user
+    } do
+      {:ok, referrer_user} = Users.create_user(params_for(:user))
+      {:ok, referrer_account} = Accounts.create_account(@create_attrs, referrer_user)
+      {:ok, account} = Accounts.create_account(@incomplete_attrs, user)
 
       attrs_with_referral = %{
         cpf: account.cpf,
@@ -139,8 +160,23 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["referral_code"] != nil
     end
 
-    test "update account return error when referral_code is invalid", %{conn: conn} do
-      Accounts.create_account(@incomplete_attrs)
+    test "update account returns unauthorizated", %{conn: conn, user: user} do
+      conn = delete_req_header(conn, "authorization")
+
+      {:ok, account} = Accounts.create_account(@incomplete_attrs, user)
+
+      update_attrs = %{
+        cpf: account.cpf,
+        email: "teste@mail.com"
+      }
+
+      conn = post(conn, Routes.account_path(conn, :create), account: update_attrs)
+
+      assert conn.status == 401
+    end
+
+    test "update account return error when referral_code is invalid", %{conn: conn, user: user} do
+      Accounts.create_account(@incomplete_attrs, user)
 
       conn =
         post(conn, Routes.account_path(conn, :create),
@@ -193,8 +229,8 @@ defmodule BankAccountWeb.AccountControllerTest do
   end
 
   describe "show account" do
-    test "renders account", %{conn: conn} do
-      {:ok, account} = Accounts.create_account(@create_attrs)
+    test "renders account", %{conn: conn, user: user} do
+      {:ok, account} = Accounts.create_account(@create_attrs, user)
       conn = get(conn, Routes.account_path(conn, :show, account.id))
       response_account = json_response(conn, 200)["data"]
       assert response_account["birth_date"] == @create_attrs["birth_date"]
@@ -208,8 +244,17 @@ defmodule BankAccountWeb.AccountControllerTest do
       assert response_account["status"] == "completed"
     end
 
-    test "renders error when id doesn't exist", %{conn: conn} do
-      {:ok, _account} = Accounts.create_account(@create_attrs)
+    test "renders account returns unauthorizated", %{conn: conn, user: user} do
+      conn = delete_req_header(conn, "authorization")
+
+      {:ok, account} = Accounts.create_account(@create_attrs, user)
+      conn = get(conn, Routes.account_path(conn, :show, account.id))
+
+      assert conn.status == 401
+    end
+
+    test "renders error when id doesn't exist", %{conn: conn, user: user} do
+      {:ok, _account} = Accounts.create_account(@create_attrs, user)
       conn = get(conn, Routes.account_path(conn, :show, 12391))
       assert json_response(conn, 404)["errors"] == %{"detail" => "Not Found"}
     end

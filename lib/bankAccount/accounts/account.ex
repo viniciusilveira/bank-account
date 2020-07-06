@@ -3,6 +3,7 @@ defmodule BankAccount.Accounts.Account do
   import Ecto.Changeset
   import Brcpfcnpj.Changeset
 
+  alias BankAccount.Users.User
   alias BankAccount.Accounts.Account
 
   use Timex
@@ -22,6 +23,7 @@ defmodule BankAccount.Accounts.Account do
     field :referral_code, :binary
     field :state, :binary
     field :status, :string
+    belongs_to(:user, User)
     has_many :accounts, Account, foreign_key: :parent_id
     belongs_to :account, Account, foreign_key: :parent_id
 
@@ -29,10 +31,11 @@ defmodule BankAccount.Accounts.Account do
   end
 
   @doc false
-  def changeset(account, attrs) do
+  def changeset(account, attrs, user) do
     account
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> cast_assoc(:accounts)
+    |> put_assoc(:user, user)
     |> validate_required(@required_fields)
     |> validate_cpf(:cpf)
     |> validate_date(:birth_date)
