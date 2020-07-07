@@ -5,10 +5,21 @@ defmodule BankAccountWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", BankAccountWeb do
+  scope "/api/v1", BankAccountWeb do
     pipe_through :api
-    resources "/accounts", AccountController, only: [:create]
-    get "/accounts/:id", AccountController, :show
+    post "/sign_up", UserController, :create
+    post "/sign_in", UserController, :sign_in
+  end
+
+  pipeline :jwt_authenticated do
+    plug BankAccount.Guardian.AuthPipeline
+  end
+
+  scope "/api/v1", BankAccountWeb do
+    pipe_through [:api, :jwt_authenticated]
+
+    resources "/users", UserController, only: [:show, :update]
+    resources "/accounts", AccountController, only: [:create, :show]
   end
 
   # Enables LiveDashboard only for development

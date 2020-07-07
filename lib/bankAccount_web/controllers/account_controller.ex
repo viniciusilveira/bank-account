@@ -4,36 +4,43 @@ defmodule BankAccountWeb.AccountController do
   alias Brcpfcnpj
   alias BankAccount.Accounts
   alias BankAccount.Accounts.Account
+  alias BankAccount.Users.User
 
   action_fallback BankAccountWeb.FallbackController
 
   def create(conn, %{"account" => account_params}) do
-    cpf = format_cpf(account_params)
+    with %User{} = user <- Guardian.Plug.current_resource(conn) do
+      cpf = format_cpf(account_params)
 
-    account_params = Map.merge(account_params, %{"cpf" => cpf})
+      account_params = Map.merge(account_params, %{"cpf" => cpf})
 
-    with nil <- Accounts.get_account_by_cpf(account_params["cpf"]) do
-      with {:ok, %Account{} = account} <- Accounts.create_account(account_params) do
-        conn
-        |> put_status(:created)
-        |> put_resp_header("location", Routes.account_path(conn, :show, account))
-        |> render("show.json", %{account: account, message: get_message(account)})
+      with nil <- Accounts.get_account_by_cpf(account_params["cpf"]) do
+        with {:ok, %Account{} = account} <- Accounts.create_account(account_params, user) do
+          conn
+          |> put_status(:created)
+          |> put_resp_header("location", Routes.account_path(conn, :show, account))
+          |> render("show.json", %{account: account, message: get_message(account)})
+        end
+      else
+        account = %Account{} ->
+          conn
+          |> update(account, account_params)
       end
-    else
-      account = %Account{} ->
-        conn
-        |> update(account, account_params)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    with {:ok, %Account{} = account} <- Accounts.get_account(id) do
+    with %User{} = user <- Guardian.Plug.current_resource(conn),
+         {:ok, %Account{} = account} <- Accounts.get_account(id),
+         true <- user.id == account.user_id do
       render(conn, "show_with_relateds.json", account: account)
     end
   end
 
   defp update(conn, %Account{} = account, account_params) do
-    with {:ok, %Account{} = account} <-
+    with %User{} = user <- Guardian.Plug.current_resource(conn),
+         true <- user.id == account.user_id,
+         {:ok, %Account{} = account} <-
            Accounts.update_account(account, Map.delete(account_params, :cpf)) do
       render(conn, "show.json", %{account: account, message: get_message(account)})
     end
