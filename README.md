@@ -101,7 +101,7 @@ run:
 ## Install with docker
 
 
-### 1. Duplicate files `dev.secret.exs.example` and `test.secret.exs.example`:
+#### 1. Duplicate files `dev.secret.exs.example` and `test.secret.exs.example`:
 
   ```bash
   cd banking_api
@@ -111,7 +111,7 @@ run:
 
 Changes hostname to `"db"`
 
-### 2. Build and up application:
+#### 2. Build and up application:
 
 ```bash
 docker-compose build
@@ -120,7 +120,7 @@ docker-compose up
 
 Now you phoenix application is running in http://localhost:4000;
 
-### 3. Run tests
+#### 3. Run tests
 
 ```bash
 docker-compose run web mix test
