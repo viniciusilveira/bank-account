@@ -41,6 +41,31 @@ defmodule BankAccountWeb.UserControllerTest do
     end
   end
 
+  describe "sign in" do
+    test "renders user when data is valid", %{conn: conn} do
+      user = fixture(:user)
+
+      conn =
+        post(conn, Routes.user_path(conn, :sign_in), %{
+          username: user.username,
+          password: user.password
+        })
+
+      assert %{"jwt" => jwt} = json_response(conn, 200)["data"]
+
+      assert true = is_binary(jwt)
+    end
+
+    test "renders errors when password is invalid", %{conn: conn} do
+      user = fixture(:user)
+
+      conn =
+        post(conn, Routes.user_path(conn, :sign_in), %{username: user.username, password: "123"})
+
+      assert %{"error" => "Login error"} = json_response(conn, 401)
+    end
+  end
+
   describe "update user" do
     setup %{conn: conn} do
       {:ok, user} = Users.create_user(params_for(:user))
