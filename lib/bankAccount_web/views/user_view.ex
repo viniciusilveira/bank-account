@@ -17,4 +17,8 @@ defmodule BankAccountWeb.UserView do
   def render("jwt.json", %{jwt: jwt, user: user}) do
     %{data: %{id: user.id, username: user.username, jwt: jwt}}
   end
+
+  def render("jwt.json", %{jwt: jwt}) do
+    %{data: %{jwt: jwt}}
+  end
 end
