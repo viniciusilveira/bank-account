@@ -24,7 +24,7 @@
 
 > To authenticate, register a new user with `sign_up` or log in an existing user with `sign_in` route, and add `jwt` token returned in the response to header request as in the examples.
 
-* post `/sign_up` => Register new user:
+#### post `/sign_up` => Register new user:
 
 ```
 curl --location --request POST 'localhost:4000/api/v1/sign_up' \
@@ -38,7 +38,7 @@ curl --location --request POST 'localhost:4000/api/v1/sign_up' \
 }'
 ```
 
-* post `/sign_in` => Login user:
+#### post `/sign_in` => Login user:
 
 ```
 curl --location --request POST 'localhost:4000/api/v1/sign_in' \
@@ -49,7 +49,7 @@ curl --location --request POST 'localhost:4000/api/v1/sign_in' \
 }'
 ```
 
-* put `/user` => Update passwords:
+#### put `/user` => Update passwords:
 
 ```
 curl --location --request PUT 'localhost:4000/api/v1/users/1' \
@@ -63,7 +63,7 @@ curl --location --request PUT 'localhost:4000/api/v1/users/1' \
 }'
 ```
 
-* post `/accounts` => Create or update Account;
+#### post `/accounts` => Create or update Account;
 
 ```
 curl --location --request POST 'localhost:4000/api/v1/accounts' \
@@ -83,14 +83,15 @@ curl --location --request POST 'localhost:4000/api/v1/accounts' \
 }'
 ```
 
-> get `/accounts/:id` => Show Account and accounts created with `referral_code`:
+#### get `/accounts/:id` => Show Account and accounts created with `referral_code`:
 
 ```
 curl --location --request GET 'localhost:4000/api/v1/accounts/1' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJiYW5rQWNjb3VudCIsImV4cCI6MTU5NjQ3ODczOCwiaWF0IjoxNTk0MDU5NTM4LCJpc3MiOiJiYW5rQWNjb3VudCIsImp0aSI6Ijc2ZGNmNzUxLTcyOTgtNGYwYy1iNjA2LTY5MThiZmNlZmNmYSIsIm5iZiI6MTU5NDA1OTUzNywic3ViIjoiMiIsInR5cCI6ImFjY2VzcyJ9.2Vi_NnMCesWLb-BqYxRIEPb5sivRgFGxVGJ8btB1GLyYATzclMWR5_wODj28pXg4QHtw5nO-qxdl-b0k_RfXag'
 ```
 
-### Postman
+### 4.Postman
 
 To use [postman](https://www.postman.com/), import this [collection](https://www.getpostman.com/collections/e5fd245bd2f40f692dcf).
 Attention to authenticated routes.
+
