@@ -21,8 +21,6 @@ Clone project:
 
 #### 1. Install Postgres
 
-Servidor de banco de dados utilizado.
-
 > OsX:
 
   ```bash
